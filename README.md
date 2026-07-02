@@ -3,10 +3,8 @@ title: Redrob Ranking Sandbox
 emoji: 🏆
 colorFrom: indigo
 colorTo: blue
-sdk: gradio
-sdk_version: "5.9.1"
-app_file: app.py
-python_version: "3.11"
+sdk: docker
+app_port: 7860
 pinned: false
 license: mit
 short_description: "5-channel candidate ranking pipeline for Redrob Hackathon v4"
