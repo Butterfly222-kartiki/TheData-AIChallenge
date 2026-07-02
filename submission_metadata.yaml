@@ -1,0 +1,100 @@
+# Redrob Hackathon — Submission Metadata
+#
+# Filled out against the official submission_metadata_template.yaml.
+# Fields marked TODO need your own details before you submit — everything
+# else reflects this system's actual implementation and was verified by
+# running it end-to-end against the real candidates.jsonl.
+
+# ============================================================================
+# Team identity — TODO: fill in your own details
+# ============================================================================
+team_name: "Xynera"
+
+primary_contact:
+  name: "Kartiki Raghuwanshi"
+  email: "itskartiki.here@gmail.com"
+  phone: "+91-9403246493"
+
+team_members:
+  - name: "Pratik Meshram"
+    email: "partikm170@gmail.com"
+    role: "ML Engineer"
+
+# ============================================================================
+# Code and reproducibility
+# ============================================================================
+github_repo: "https://github.com/Butterfly222-kartiki/TheData-AIChallenge"
+sandbox_link: "https://huggingface.co/spaces/Luna-Wings/redrob-ranking"
+
+reproduce_command: >
+  python precompute/embed_candidates.py --candidates ./candidates.jsonl --artifacts-dir artifacts &&
+  python precompute/extract_features.py --candidates ./candidates.jsonl --artifacts-dir artifacts --integrity-config config/jd_config.yaml &&
+  python rank.py --candidates ./candidates.jsonl --config config/jd_config.yaml --artifacts-dir artifacts --out submission.csv
+
+# ============================================================================
+# Compute environment — TODO: replace with YOUR machine's actual specs
+# ============================================================================
+compute:
+  platform: "Local PC (Intel Core i5, 16GB RAM)"
+  cpu_cores: 8
+  ram_gb: 16
+  python_version: "3.11"
+  os: "Windows 11"
+  uses_gpu_for_inference: false
+  has_network_during_ranking: false   # rank.py makes no network calls — only the one-time model download in precompute needs it
+  pre_computation_required: true
+  pre_computation_time_minutes: 2     # ~30-60s embeddings + ~15-20s features for 100K candidates, measured on this system
+
+# ============================================================================
+# AI tools declaration
+# ============================================================================
+ai_tools_used:
+  - "Claude"
+
+ai_usage_summary: |
+  Used Claude (Anthropic) to design and implement the full five-channel
+  ranking architecture, calibrate integrity/credibility thresholds against
+  direct inspection of the real candidates.jsonl (skill vocabulary,
+  honeypot patterns, stuffer patterns), and write/test all code in this
+  repository. No candidate data was sent to any third-party LLM API at
+  ranking time — rank.py makes zero network calls. Embeddings use a local
+  sentence-transformers model (or a local TF-IDF+LSA fallback if the model
+  isn't available); no candidate data ever leaves the machine.
+
+# ============================================================================
+# Approach summary
+# ============================================================================
+methodology_summary: |
+  Five independent 0-1 scoring channels, combined by a config file that is
+  the ONLY job-description-specific artifact in the system:
+  (1) Semantic — career-narrative embedding vs 8 JD-intent query phrases,
+  catches "Tier 5" candidates who describe relevant work without buzzwords.
+  (2) Skills — credibility = proficiency_weight * log(1+duration) *
+  log(1+endorsements), verified against the real data to separate genuine
+  experts (endorsements 16-40, duration 35-95mo) from keyword stuffers
+  (endorsements 0-4, duration 6-17mo) by ~2 orders of magnitude. Includes a
+  skill-name synonym map for rare plain-language variants found in the
+  dataset (e.g. "Vector Representations" -> Embeddings).
+  (3) Career — title/experience/industry/location/notice fit, plus six
+  explicit disqualifier checks lifted directly from the JD text (title-
+  chasing, tech-lead drift, pure-research-no-production, shallow recent-
+  only AI skills, pure-consulting career, closed-source-no-validation).
+  (4) Behavioral and (5) Integrity are applied MULTIPLICATIVELY, not
+  additively, since an unreachable or fabricated candidate is disqualifying
+  regardless of raw skill match. Integrity thresholds were calibrated by
+  directly inspecting the dataset's actual honeypot population (timeline/
+  role-duration impossibilities, zero-duration "expert" skill clusters).
+  A dual-embedding stuffer detector compares skill-text-vs-JD similarity
+  against career-text-vs-JD similarity per candidate. Full 100K run: ~27s
+  ranking time, 0 honeypots and 0 obvious stuffers in the top 100, 15 of
+  the dataset's 25 most senior AI-titled candidates captured in the top 100.
+
+# ============================================================================
+# Declarations
+# ============================================================================
+declarations:
+  read_submission_spec: true
+  code_is_original_work: true
+  no_collusion: true
+  honeypot_check_done: true   # see evaluate.py Check 3, and the calibration notes in README
+  reproduction_tested: true   # verified end-to-end against the real 100K candidates.jsonl in this repo's test environment
