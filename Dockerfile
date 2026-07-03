@@ -11,6 +11,8 @@ COPY app.py .
 COPY engine/ ./engine/
 COPY config/ ./config/
 COPY artifacts/ ./artifacts/
+COPY rank.py .
+COPY precompute/ ./precompute/
 
 # Expose Gradio's default port
 EXPOSE 7860

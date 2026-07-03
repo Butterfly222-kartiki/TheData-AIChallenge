@@ -28,14 +28,16 @@ See "What we actually verified" below for the numbers.
 ## Quickstart
 
 ```bash
-pip install -r requirements.txt
+# Precompute (one-time, needs internet for model download if not cached)
+python precompute/embed_candidates.py --candidates precompute/India_runs_data_and_ai_challenge/candidates.jsonl --artifacts-dir artifacts
+python precompute/extract_features.py --candidates precompute/India_runs_data_and_ai_challenge/candidates.jsonl --artifacts-dir artifacts --integrity-config config/jd_config.yaml
 
-python precompute/embed_candidates.py --candidates /path/to/candidates.jsonl --artifacts-dir artifacts
-python precompute/extract_features.py --candidates /path/to/candidates.jsonl --artifacts-dir artifacts --integrity-config config/jd_config.yaml
-python rank.py --candidates /path/to/candidates.jsonl --config config/jd_config.yaml --artifacts-dir artifacts --out submission.csv
+# Ranking (the timed, network-off step Stage 3 reproduces)
+python rank.py --candidates precompute/India_runs_data_and_ai_challenge/candidates.jsonl --config config/jd_config.yaml --artifacts-dir artifacts --out team_xynera.csv
 
-python /path/to/validate_submission.py submission.csv   # the organizers' own checker
-python evaluate.py --submission submission.csv --candidates /path/to/candidates.jsonl --config config/jd_config.yaml
+# Validate
+python precompute/India_runs_data_and_ai_challenge/validate_submission.py team_xynera.csv
+python evaluate.py --submission team_xynera.csv --candidates precompute/India_runs_data_and_ai_challenge/candidates.jsonl --config config/jd_config.yaml
 ```
 
 `submission.csv` in this repo is real output from a full run against the
